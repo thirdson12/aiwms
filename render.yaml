@@ -14,7 +14,6 @@ services:
     plan: free
     region: frankfurt
     buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && NODE_ENV=development pnpm install --frozen-lockfile && pnpm render:build:api
-    preDeployCommand: pnpm render:predeploy:api
     startCommand: pnpm render:start:api
     healthCheckPath: /health
     envVars:

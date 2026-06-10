@@ -94,7 +94,7 @@ Render loglarında `aiwms-api` → **Logs** sekmesine bakın. Genelde Prisma vey
 - Web servisinde `API_URL` = API'nin `https://...onrender.com` adresi olmalı
 
 ### Veritabanı boş
-`preDeployCommand` migration + seed çalıştırır. Logda `pnpm db:seed` hatası varsa API servisinde **Manual Deploy** → **Clear build cache & deploy** deneyin.
+API `startCommand` migration + seed çalıştırır (free tier `preDeployCommand` desteklemez). Logda `pnpm db:seed` hatası varsa API servisinde **Manual Deploy** → **Clear build cache & deploy** deneyin.
 
 ### Ücretsiz PostgreSQL
 Render free DB 90 gün sonra silinir; kalıcı kullanım için ücretli plan gerekir.
