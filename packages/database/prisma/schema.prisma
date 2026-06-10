@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  roleId       String   @map("role_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  role              Role               @relation(fields: [roleId], references: [id])
+  createdJobs       Job[]              @relation("CreatedJobs")
+  assignedJobs      Job[]              @relation("AssignedJobs")
+  stockTransactions StockTransaction[]
+  createdExpenses   Expense[]
+  createdIncomes    Income[]
+  createdDebts      Debt[]
+  debtPayments      DebtPayment[]
+
+  @@map("users")
+}
+
+enum JobStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  notes     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  jobs     Job[]
+  expenses Expense[]
+  incomes  Income[]
+  debts    Debt[]
+
+  @@map("customers")
+}
+
+model Job {
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  status       JobStatus @default(pending)
+  createdById  String    @map("created_by_id")
+  assignedToId String?   @map("assigned_to_id")
+  customerId   String?   @map("customer_id")
+  dueDate      DateTime? @map("due_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  createdBy  User      @relation("CreatedJobs", fields: [createdById], references: [id])
+  assignedTo User?     @relation("AssignedJobs", fields: [assignedToId], references: [id])
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  debts      Debt[]
+  expenses   Expense[]
+  incomes    Income[]
+
+  @@map("jobs")
+}
+
+enum StockTransactionType {
+  stock_in
+  stock_out
+  adjustment
+}
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  sku            String   @unique
+  description    String?
+  unit           String   @default("adet")
+  quantityOnHand Int      @default(0) @map("quantity_on_hand")
+  minStockLevel  Int      @default(0) @map("min_stock_level")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  transactions StockTransaction[]
+
+  @@map("products")
+}
+
+model StockTransaction {
+  id          String               @id @default(uuid())
+  productId   String               @map("product_id")
+  type        StockTransactionType
+  quantity    Int
+  notes       String?
+  createdById String               @map("created_by_id")
+  createdAt   DateTime             @default(now()) @map("created_at")
+
+  product   Product @relation(fields: [productId], references: [id])
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@map("stock_transactions")
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  category    String?
+  date        DateTime @default(now())
+  customerId  String?  @map("customer_id")
+  jobId       String?  @map("job_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer  Customer? @relation(fields: [customerId], references: [id])
+  job       Job?      @relation(fields: [jobId], references: [id])
+  createdBy User      @relation(fields: [createdById], references: [id])
+
+  @@map("expenses")
+}
+
+model Income {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  category    String?
+  date        DateTime @default(now())
+  customerId  String?  @map("customer_id")
+  jobId       String?  @map("job_id")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer  Customer? @relation(fields: [customerId], references: [id])
+  job       Job?      @relation(fields: [jobId], references: [id])
+  createdBy User      @relation(fields: [createdById], references: [id])
+
+  @@map("incomes")
+}
+
+model Debt {
+  id          String    @id @default(uuid())
+  title       String
+  amount      Decimal   @db.Decimal(12, 2)
+  paidAmount  Decimal   @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  dueDate     DateTime? @map("due_date")
+  notes       String?
+  customerId  String    @map("customer_id")
+  jobId       String?   @map("job_id")
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  customer  Customer        @relation(fields: [customerId], references: [id])
+  job       Job?            @relation(fields: [jobId], references: [id])
+  createdBy User            @relation(fields: [createdById], references: [id])
+  payments  DebtPayment[]
+
+  @@map("debts")
+}
+
+model DebtPayment {
+  id          String   @id @default(uuid())
+  debtId      String   @map("debt_id")
+  amount      Decimal  @db.Decimal(12, 2)
+  notes       String?
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  debt      Debt @relation(fields: [debtId], references: [id])
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  @@map("debt_payments")
+}
+
+model WhatsappTemplate {
+  id        String   @id @default(uuid())
+  key       String
+  name      String
+  body      String
+  locale    String   @default("tr")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([key, locale])
+  @@map("whatsapp_templates")
+}

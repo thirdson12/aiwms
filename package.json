@@ -1,0 +1,28 @@
+{
+  "name": "aiwms",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "db:generate": "pnpm --filter @aiwms/database generate",
+    "db:migrate": "pnpm --filter @aiwms/database migrate",
+    "db:migrate:deploy": "pnpm --filter @aiwms/database migrate:deploy",
+    "db:seed": "pnpm --filter @aiwms/database seed",
+    "db:studio": "pnpm --filter @aiwms/database studio",
+    "render:build:api": "pnpm --filter @aiwms/shared build && pnpm db:generate && pnpm --filter @aiwms/api build",
+    "render:build:web": "pnpm --filter @aiwms/shared build && pnpm --filter @aiwms/web build",
+    "render:predeploy:api": "pnpm db:migrate:deploy && pnpm db:seed",
+    "render:start:api": "pnpm --filter @aiwms/api start",
+    "render:start:web": "pnpm --filter @aiwms/web start",
+    "postinstall": "pnpm db:generate"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
