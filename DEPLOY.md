@@ -93,6 +93,24 @@ Render loglarında `aiwms-api` → **Logs** sekmesine bakın. Genelde Prisma vey
 - API servisinin **Live** olduğundan emin olun
 - Web servisinde `API_URL` = API'nin `https://...onrender.com` adresi olmalı
 
+### P1001 — Can't reach database server (`dpg-...-a:5432`)
+
+Bu hata neredeyse her zaman **bölge uyumsuzluğu** veya **yanlış DATABASE_URL** demektir.
+
+**Kontrol edin (Render Dashboard):**
+1. `aiwms-db` (PostgreSQL) → **Region**
+2. `aiwms-api` → **Region**
+3. İkisi **aynı bölgede** olmalı (ör. ikisi de Frankfurt)
+
+API Frankfurt'ta, DB başka bölgedeyse internal hostname (`dpg-...-a`) **çalışmaz**.
+
+**Hızlı çözüm (önerilen):**
+1. PostgreSQL servisi → **Connections** → **External Database URL** kopyalayın
+2. `aiwms-api` → **Environment** → `DATABASE_URL` → External URL yapıştırın (sonuna `?sslmode=require` ekleyin, yoksa)
+3. **Manual Deploy**
+
+**Kalıcı çözüm:** DB ve API aynı bölgede olsun. Gerekirse DB'yi doğru bölgede yeniden oluşturun ve Blueprint sync yapın.
+
 ### Veritabanı boş
 Render artık **Docker** ile deploy eder (`Dockerfile.api`, `Dockerfile.web`). Blueprint sync sonrası **Manual Deploy → Clear build cache** yapın.
 

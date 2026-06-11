@@ -4,6 +4,7 @@
 databases:
   - name: aiwms-db
     plan: free
+    region: frankfurt
     databaseName: aiwms
     user: aiwms
 
