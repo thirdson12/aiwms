@@ -16,10 +16,12 @@
     "none": "—",
     "language": "Language",
     "turkish": "Türkçe",
-    "english": "English"
+    "english": "English",
+    "searchByName": "Search by name...",
+    "noSearchResults": "No records match your search"
   },
   "nav": {
-    "brand": "AIWMS",
+    "brand": "ERDEVİR AIWMS",
     "subtitle": "Work Management",
     "dashboard": "Dashboard",
     "jobs": "Jobs",
@@ -36,6 +38,10 @@
     "owner": "Owner",
     "worker": "Worker"
   },
+  "jobServiceType": {
+    "transmission": "Transmission",
+    "normal_service": "Normal Service"
+  },
   "jobStatus": {
     "pending": "pending",
     "in_progress": "in progress",
@@ -48,7 +54,7 @@
     "adjustment": "adjustment"
   },
   "login": {
-    "title": "Sign in to AIWMS",
+    "title": "Sign in to ERDEVİR AIWMS",
     "subtitle": "Accounting, Inventory and Work Management",
     "email": "Email",
     "password": "Password",
@@ -78,7 +84,18 @@
     "monthlyChart": "Last 6 months",
     "incomeLabel": "Income",
     "expenseLabel": "Expense",
-    "noChartData": "Not enough data for chart"
+    "noChartData": "Not enough data for chart",
+    "quickActions": "Quick Add",
+    "quickJob": "Add Job",
+    "quickJobDesc": "Service type, plate, customer",
+    "quickCustomer": "Add Customer",
+    "quickCustomerDesc": "Email optional",
+    "quickDebt": "Add Debt",
+    "quickDebtDesc": "Accounting debt record",
+    "quickInventory": "Add Inventory",
+    "quickInventoryDesc": "Transmission or service part",
+    "debtorsTitle": "Debtors",
+    "noDebtors": "No customers with outstanding debt"
   },
   "jobs": {
     "title": "Jobs",
@@ -105,7 +122,23 @@
     "created": "Created",
     "saving": "Saving...",
     "saveChanges": "Save changes",
-    "deleteConfirm": "Delete this job?"
+    "deleteConfirm": "Delete this job?",
+    "serviceType": "Service Type",
+    "plateNumber": "Plate Number",
+    "serviceTransmission": "Transmission",
+    "serviceNormal": "Normal Service",
+    "addDebt": "Add Debt",
+    "debtTitle": "Debt title",
+    "debtAmount": "Debt amount",
+    "partsUsed": "Parts Used",
+    "installPart": "Install Part / Transmission",
+    "selectProduct": "Select from stock",
+    "partQuantity": "Quantity",
+    "install": "Deduct from stock",
+    "noPartsUsed": "No parts used yet",
+    "removePartConfirm": "Remove this part usage? Stock will be restored.",
+    "removeDebtConfirm": "Delete this debt record?",
+    "debtHasPayments": "Has payments"
   },
   "inventory": {
     "title": "Inventory",
@@ -118,6 +151,11 @@
     "quantity": "Quantity",
     "minStock": "Min Stock",
     "lowStock": "Low stock",
+    "transmissionStock": "Transmission Stock",
+    "servicePartsStock": "Service Parts",
+    "category": "Category",
+    "categoryTransmission": "Transmission",
+    "categoryServicePart": "Service Part",
     "noProducts": "No products found",
     "createTitle": "Create Product",
     "createSubtitle": "Add a new product to inventory",
@@ -182,8 +220,21 @@
     "customer": "Customer",
     "job": "Job",
     "pay": "Record payment",
+    "whatsappDebt": "WhatsApp Debt",
+    "changeStatus": "Change status",
+    "autoStatus": "Auto calculate",
     "payAmount": "Payment amount",
     "newDebt": "New debt",
+    "manageTitle": "Debt management",
+    "paymentHistory": "Payment history",
+    "reversePayment": "Reverse payment",
+    "reversePaymentConfirm": "Reverse this payment? The remaining balance will be updated.",
+    "softDelete": "Archive",
+    "softDeleteConfirm": "Archive this debt? An admin can restore it from the deleted debts tab.",
+    "restore": "Restore",
+    "restoreConfirm": "Restore this debt?",
+    "deletedAt": "Deleted at",
+    "noDeletedDebts": "No deleted debts",
     "noDebts": "No debt records"
   },
   "customers": {
@@ -197,7 +248,10 @@
     "debtStatus": "Debt status",
     "noCustomers": "No customers found",
     "createTitle": "Create Customer",
-    "detailTitle": "Customer detail"
+    "detailTitle": "Customer detail",
+    "editTitle": "Edit customer",
+    "jobsTitle": "Jobs for this customer",
+    "noJobs": "No jobs found for this customer"
   },
   "accounting": {
     "title": "Accounting",
@@ -206,6 +260,8 @@
     "expenses": "Expenses",
     "incomes": "Income",
     "debtsTab": "Debts",
+    "deletedDebtsTab": "Deleted Debts",
+    "deletedDebtsDesc": "Admin only. Restore archived debt records here.",
     "expensesDesc": "View all expense records and add new expenses",
     "incomesDesc": "View all income records and add new income",
     "debtsDesc": "Customer debt status, debt records and collections",
@@ -225,6 +281,8 @@
     "newExpense": "Add expense",
     "newIncome": "Add income",
     "noRecords": "No records",
+    "invoiceUpload": "Upload invoice (optional)",
+    "invoiceAttached": "Attached invoice",
     "debtCol": "Debt status",
     "customerDebts": "Customer debt status"
   },

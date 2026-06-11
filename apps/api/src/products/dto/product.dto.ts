@@ -1,5 +1,10 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
-import { StockTransactionType, STOCK_TRANSACTION_TYPE_VALUES } from '@aiwms/shared';
+import {
+  ProductCategory,
+  PRODUCT_CATEGORY_VALUES,
+  StockTransactionType,
+  STOCK_TRANSACTION_TYPE_VALUES,
+} from '@aiwms/shared';
 
 export class CreateProductDto {
   @IsString()
@@ -15,9 +20,12 @@ export class CreateProductDto {
   description?: string;
 
   @IsOptional()
+  @IsIn(PRODUCT_CATEGORY_VALUES)
+  category?: ProductCategory;
+
+  @IsOptional()
   @IsString()
   unit?: string;
-
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -43,6 +51,10 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsIn(PRODUCT_CATEGORY_VALUES)
+  category?: ProductCategory;
 
   @IsOptional()
   @IsString()

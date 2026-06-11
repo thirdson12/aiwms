@@ -30,7 +30,7 @@ export class DashboardService {
       this.prisma.job.count({ where: { ...where, status: 'cancelled' } }),
       this.prisma.product.count({ where: { isActive: true } }),
       this.prisma.customer.count({ where: { isActive: true } }),
-      this.prisma.debt.findMany(),
+      this.prisma.debt.findMany({ where: { deletedAt: null } }),
       getFinanceTotals(this.prisma),
       getMonthlyFinance(this.prisma),
     ]);

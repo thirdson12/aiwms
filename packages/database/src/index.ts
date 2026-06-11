@@ -1,1 +1,1 @@
-export { PrismaClient, JobStatus, StockTransactionType } from '@prisma/client';
+export { PrismaClient, JobStatus, StockTransactionType, JobServiceType, ProductCategory, DebtStatusOverride } from '@prisma/client';

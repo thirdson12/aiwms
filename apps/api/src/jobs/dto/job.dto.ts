@@ -1,12 +1,19 @@
 import {
   IsDateString,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUUID,
+  Min,
   MinLength,
 } from 'class-validator';
-import { JobStatus, JOB_STATUS_VALUES } from '@aiwms/shared';
+import {
+  JobServiceType,
+  JOB_SERVICE_TYPE_VALUES,
+  JobStatus,
+  JOB_STATUS_VALUES,
+} from '@aiwms/shared';
 
 export class CreateJobDto {
   @IsString()
@@ -16,6 +23,14 @@ export class CreateJobDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsIn(JOB_SERVICE_TYPE_VALUES)
+  serviceType?: JobServiceType;
+
+  @IsOptional()
+  @IsString()
+  plateNumber?: string;
 
   @IsOptional()
   @IsUUID()
@@ -45,6 +60,14 @@ export class UpdateJobDto {
   status?: JobStatus;
 
   @IsOptional()
+  @IsIn(JOB_SERVICE_TYPE_VALUES)
+  serviceType?: JobServiceType;
+
+  @IsOptional()
+  @IsString()
+  plateNumber?: string | null;
+
+  @IsOptional()
   @IsUUID()
   assignedToId?: string | null;
 
@@ -55,4 +78,17 @@ export class UpdateJobDto {
   @IsOptional()
   @IsDateString()
   dueDate?: string | null;
+}
+
+export class UseJobPartDto {
+  @IsUUID()
+  productId!: string;
+
+  @IsInt()
+  @Min(1)
+  quantity!: number;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

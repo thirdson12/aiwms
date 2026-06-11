@@ -13,7 +13,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { CreateJobDto, UpdateJobDto } from './dto/job.dto';
+import { CreateJobDto, UpdateJobDto, UseJobPartDto } from './dto/job.dto';
 import { JobsService } from './jobs.service';
 
 @Controller('jobs')
@@ -44,6 +44,24 @@ export class JobsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.jobsService.update(id, dto, user);
+  }
+
+  @Post(':id/parts')
+  usePart(
+    @Param('id') id: string,
+    @Body() dto: UseJobPartDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.jobsService.usePart(id, dto, user);
+  }
+
+  @Delete(':id/parts/:partId')
+  removePart(
+    @Param('id') id: string,
+    @Param('partId') partId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.jobsService.removePart(id, partId, user);
   }
 
   @Delete(':id')

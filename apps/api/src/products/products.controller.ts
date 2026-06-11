@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AuthUser, RoleName } from '@aiwms/shared';
+import { AuthUser, RoleName, ProductCategory } from '@aiwms/shared';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -27,8 +27,11 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Get()
-  findAll(@Query('includeInactive') includeInactive?: string) {
-    return this.productsService.findAll(includeInactive === 'true');
+  findAll(
+    @Query('includeInactive') includeInactive?: string,
+    @Query('category') category?: ProductCategory,
+  ) {
+    return this.productsService.findAll(includeInactive === 'true', category);
   }
 
   @Get(':id')

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserDto, CustomerDto } from '@aiwms/shared';
+import { UserDto, CustomerDto, JobServiceType, JOB_SERVICE_TYPE_VALUES } from '@aiwms/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,8 @@ export default function NewJobPage() {
   const [customers, setCustomers] = useState<CustomerDto[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [serviceType, setServiceType] = useState<JobServiceType>(JobServiceType.NORMAL_SERVICE);
+  const [plateNumber, setPlateNumber] = useState('');
   const [assignedToId, setAssignedToId] = useState('');
   const [customerId, setCustomerId] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -47,6 +49,8 @@ export default function NewJobPage() {
         body: JSON.stringify({
           title,
           description: description || undefined,
+          serviceType,
+          plateNumber: plateNumber || undefined,
           assignedToId: assignedToId || undefined,
           customerId: customerId || undefined,
           dueDate: dueDate || undefined,
@@ -84,6 +88,18 @@ export default function NewJobPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="serviceType">{t('jobs.serviceType')}</Label>
+            <Select id="serviceType" value={serviceType} onChange={(e) => setServiceType(e.target.value as JobServiceType)}>
+              {JOB_SERVICE_TYPE_VALUES.map((value) => (
+                <option key={value} value={value}>{t(`jobServiceType.${value}`)}</option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="plateNumber">{t('jobs.plateNumber')}</Label>
+            <Input id="plateNumber" value={plateNumber} onChange={(e) => setPlateNumber(e.target.value.toUpperCase())} placeholder="34 ABC 123" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="customerId">{t('jobs.customer')}</Label>

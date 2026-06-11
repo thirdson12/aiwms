@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ProductCategory, PRODUCT_CATEGORY_VALUES } from '@aiwms/shared';
+import { Select } from '@/components/ui/form-controls';
 import { useI18n } from '@/components/i18n-provider';
 import { clientFetch } from '@/lib/client-api';
 
@@ -17,6 +19,7 @@ export default function NewProductPage() {
   const [description, setDescription] = useState('');
   const [unit, setUnit] = useState('adet');
   const [quantityOnHand, setQuantityOnHand] = useState('0');
+  const [category, setCategory] = useState<ProductCategory>(ProductCategory.SERVICE_PART);
   const [minStockLevel, setMinStockLevel] = useState('0');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +39,7 @@ export default function NewProductPage() {
           unit,
           quantityOnHand: Number(quantityOnHand),
           minStockLevel: Number(minStockLevel),
+          category,
         }),
       });
       router.push(`/inventory/${product.id}`);
@@ -74,6 +78,18 @@ export default function NewProductPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">{t('inventory.category')}</Label>
+            <Select id="category" value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)}>
+              {PRODUCT_CATEGORY_VALUES.map((value) => (
+                <option key={value} value={value}>
+                  {value === ProductCategory.TRANSMISSION
+                    ? t('inventory.categoryTransmission')
+                    : t('inventory.categoryServicePart')}
+                </option>
+              ))}
+            </Select>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">

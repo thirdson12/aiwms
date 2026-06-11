@@ -7,7 +7,9 @@ import {
   CustomerDto,
   JobDto,
   JobStatus,
+  JobServiceType,
   JOB_STATUS_VALUES,
+  JOB_SERVICE_TYPE_VALUES,
   RoleName,
   UserDto,
   isAdminOrOwner,
@@ -22,6 +24,7 @@ import { useI18n } from '@/components/i18n-provider';
 import { clientFetch } from '@/lib/client-api';
 import { DebtBadge } from '@/components/debt-badge';
 import { WhatsappComposer } from '@/components/whatsapp-composer';
+import { JobDebtSection, JobPartsSection } from '@/components/job-workshop-sections';
 import { formatDate } from '@/lib/utils';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -34,6 +37,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [customers, setCustomers] = useState<CustomerDto[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [serviceType, setServiceType] = useState<JobServiceType>(JobServiceType.NORMAL_SERVICE);
+  const [plateNumber, setPlateNumber] = useState('');
   const [status, setStatus] = useState<JobStatus>(JobStatus.PENDING);
   const [assignedToId, setAssignedToId] = useState('');
   const [customerId, setCustomerId] = useState('');
@@ -54,6 +59,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         setUser(userData);
         setTitle(jobData.title);
         setDescription(jobData.description ?? '');
+        setServiceType(jobData.serviceType);
+        setPlateNumber(jobData.plateNumber ?? '');
         setStatus(jobData.status);
         setAssignedToId(jobData.assignedToId ?? '');
         setCustomerId(jobData.customerId ?? '');
@@ -75,6 +82,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const isWorker = user?.role === RoleName.WORKER;
   const canEdit = user && isAdminOrOwner(user.role);
 
+  async function reloadJob() {
+    if (!jobId) return;
+    const updated = await clientFetch<JobDto>(`jobs/${jobId}`);
+    setJob(updated);
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!jobId) return;
@@ -88,6 +101,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         : {
             title,
             description,
+            serviceType,
+            plateNumber: plateNumber || null,
             status,
             assignedToId: assignedToId || null,
             customerId: customerId || null,
@@ -125,6 +140,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     return <p className="text-muted">{t('common.loading')}</p>;
   }
 
+  const canManageParts = !!canEdit || (!!user && job.assignedToId === user.id);
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -132,6 +149,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <h1 className="text-2xl font-bold">{job.title}</h1>
           <p className="text-muted">
             {t('jobs.created')} {formatDate(job.createdAt, locale)}
+            {job.plateNumber ? ` · ${job.plateNumber}` : ''}
+            {' · '}{t(`jobServiceType.${job.serviceType}`)}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -158,6 +177,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="serviceType">{t('jobs.serviceType')}</Label>
+                <Select id="serviceType" value={serviceType} onChange={(e) => setServiceType(e.target.value as JobServiceType)}>
+                  {JOB_SERVICE_TYPE_VALUES.map((value) => (
+                    <option key={value} value={value}>{t(`jobServiceType.${value}`)}</option>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="plateNumber">{t('jobs.plateNumber')}</Label>
+                <Input id="plateNumber" value={plateNumber} onChange={(e) => setPlateNumber(e.target.value.toUpperCase())} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="customerId">{t('jobs.customer')}</Label>
@@ -227,6 +258,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
         </form>
       </Card>
+
+      <JobDebtSection job={job} canManage={!!canEdit} onUpdated={reloadJob} />
+      <JobPartsSection job={job} canManage={canManageParts} onUpdated={reloadJob} />
 
       {job.customerId && (
         <WhatsappComposer customerId={job.customerId} jobId={job.id} />

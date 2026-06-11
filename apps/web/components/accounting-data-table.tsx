@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 
 export function AccountingDataTable({
@@ -10,7 +11,7 @@ export function AccountingDataTable({
 }: {
   title: string;
   headers: string[];
-  rows: string[][];
+  rows: ReactNode[][];
   empty: string;
 }) {
   return (

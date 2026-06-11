@@ -299,12 +299,16 @@ export class ReportsService {
   private async buildDebtsReport(): Promise<DebtsReport> {
     const [debts, customers, payments] = await Promise.all([
       this.prisma.debt.findMany({
+        where: { deletedAt: null },
         include: {
           customer: { select: { id: true, name: true, phone: true } },
           job: { select: { id: true, title: true } },
         },
       }),
-      this.prisma.customer.findMany({ where: { isActive: true }, include: { debts: true } }),
+      this.prisma.customer.findMany({
+        where: { isActive: true },
+        include: { debts: { where: { deletedAt: null } } },
+      }),
       this.prisma.debtPayment.aggregate({ _sum: { amount: true } }),
     ]);
 
@@ -318,7 +322,8 @@ export class ReportsService {
       const paid = Number(debt.paidAmount);
       const remaining = amount - paid;
       const dueDate = debt.dueDate?.toISOString() ?? null;
-      const status = computeDebtStatus(amount, paid, dueDate);
+      const statusOverride = (debt.statusOverride as import('@aiwms/shared').DebtStatus | null) ?? null;
+      const status = computeDebtStatus(amount, paid, dueDate, statusOverride);
 
       if (remaining <= 0) continue;
       openDebts += 1;
@@ -334,11 +339,13 @@ export class ReportsService {
           dueDate,
           notes: debt.notes,
           status,
+          statusOverride,
           customerId: debt.customerId,
           jobId: debt.jobId,
           createdById: debt.createdById,
           createdAt: debt.createdAt.toISOString(),
           updatedAt: debt.updatedAt.toISOString(),
+          deletedAt: null,
           customer: debt.customer,
           job: debt.job,
         });
@@ -352,6 +359,7 @@ export class ReportsService {
             amount: Number(d.amount),
             paidAmount: Number(d.paidAmount),
             dueDate: d.dueDate?.toISOString() ?? null,
+            statusOverride: (d.statusOverride as import('@aiwms/shared').DebtStatus | null) ?? null,
           })),
         );
         return {
@@ -383,6 +391,7 @@ export class ReportsService {
     quantityOnHand: number;
     minStockLevel: number;
     isActive: boolean;
+    category: string;
     createdAt: Date;
     updatedAt: Date;
   }): ProductDto {
@@ -396,6 +405,7 @@ export class ReportsService {
       minStockLevel: product.minStockLevel,
       isActive: product.isActive,
       isLowStock: product.quantityOnHand <= product.minStockLevel,
+      category: product.category as ProductDto['category'],
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
     };

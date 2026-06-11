@@ -15,6 +15,20 @@ export const JobStatus = {
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus];
 
+export const JobServiceType = {
+  TRANSMISSION: 'transmission',
+  NORMAL_SERVICE: 'normal_service',
+} as const;
+
+export type JobServiceType = (typeof JobServiceType)[keyof typeof JobServiceType];
+
+export const ProductCategory = {
+  TRANSMISSION: 'transmission',
+  SERVICE_PART: 'service_part',
+} as const;
+
+export type ProductCategory = (typeof ProductCategory)[keyof typeof ProductCategory];
+
 export const StockTransactionType = {
   STOCK_IN: 'stock_in',
   STOCK_OUT: 'stock_out',
@@ -127,6 +141,8 @@ export interface JobDto {
   title: string;
   description: string | null;
   status: JobStatus;
+  serviceType: JobServiceType;
+  plateNumber: string | null;
   createdById: string;
   assignedToId: string | null;
   customerId: string | null;
@@ -137,6 +153,7 @@ export interface JobDto {
   assignedTo?: { id: string; fullName: string; email: string } | null;
   customer?: { id: string; name: string; phone: string | null } | null;
   debtSummary?: JobDebtSummary;
+  partsUsed?: JobPartUsageDto[];
 }
 
 export interface ProductDto {
@@ -144,6 +161,7 @@ export interface ProductDto {
   name: string;
   sku: string;
   description: string | null;
+  category: ProductCategory;
   unit: string;
   quantityOnHand: number;
   minStockLevel: number;
@@ -151,6 +169,17 @@ export interface ProductDto {
   isLowStock: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface JobPartUsageDto {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  category: ProductCategory;
+  quantity: number;
+  notes: string | null;
+  createdAt: string;
 }
 
 export interface StockTransactionDto {
@@ -170,6 +199,7 @@ export interface ExpenseDto {
   description: string;
   category: string | null;
   date: string;
+  invoiceFileName: string | null;
   customerId: string | null;
   jobId: string | null;
   createdById: string;
@@ -184,6 +214,7 @@ export interface IncomeDto {
   description: string;
   category: string | null;
   date: string;
+  invoiceFileName: string | null;
   customerId: string | null;
   jobId: string | null;
   createdById: string;
@@ -201,13 +232,16 @@ export interface DebtDto {
   dueDate: string | null;
   notes: string | null;
   status: DebtStatus;
+  statusOverride: DebtStatus | null;
   customerId: string;
   jobId: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
   customer?: { id: string; name: string; phone: string | null };
   job?: { id: string; title: string } | null;
+  payments?: DebtPaymentDto[];
 }
 
 export interface DebtPaymentDto {
@@ -238,7 +272,9 @@ export function computeDebtStatus(
   amount: number,
   paidAmount: number,
   dueDate: string | null,
+  statusOverride?: DebtStatus | null,
 ): DebtStatus {
+  if (statusOverride) return statusOverride;
   const remaining = amount - paidAmount;
   if (remaining <= 0) return DebtStatus.PAID;
   if (dueDate && new Date(dueDate) < new Date(new Date().toDateString())) {
@@ -249,9 +285,22 @@ export function computeDebtStatus(
 }
 
 export function summarizeDebts(
-  debts: Array<{ amount: number; paidAmount: number; dueDate: string | null }>,
+  debts: Array<{
+    amount: number;
+    paidAmount: number;
+    dueDate: string | null;
+    statusOverride?: DebtStatus | null;
+  }>,
 ): JobDebtSummary {
-  const openDebts = debts.filter((d) => d.amount - d.paidAmount > 0);
+  const openDebts = debts.filter((d) => {
+    const status = computeDebtStatus(
+      d.amount,
+      d.paidAmount,
+      d.dueDate,
+      d.statusOverride ?? null,
+    );
+    return status !== DebtStatus.PAID && d.amount - d.paidAmount > 0;
+  });
   if (openDebts.length === 0) {
     return {
       hasDebt: false,
@@ -264,7 +313,13 @@ export function summarizeDebts(
 
   const totalRemaining = openDebts.reduce((sum, d) => sum + (d.amount - d.paidAmount), 0);
   const hasOverdue = openDebts.some(
-    (d) => computeDebtStatus(d.amount, d.paidAmount, d.dueDate) === DebtStatus.OVERDUE,
+    (d) =>
+      computeDebtStatus(
+        d.amount,
+        d.paidAmount,
+        d.dueDate,
+        d.statusOverride ?? null,
+      ) === DebtStatus.OVERDUE,
   );
 
   let status: DebtStatus = DebtStatus.OPEN;
@@ -294,8 +349,14 @@ export function isAdminOrOwner(role: RoleName): boolean {
   return role === RoleName.ADMIN || role === RoleName.OWNER;
 }
 
+export function isAdmin(role: RoleName): boolean {
+  return role === RoleName.ADMIN;
+}
+
 export const ROLE_VALUES = Object.values(RoleName);
 export const JOB_STATUS_VALUES = Object.values(JobStatus);
+export const JOB_SERVICE_TYPE_VALUES = Object.values(JobServiceType);
+export const PRODUCT_CATEGORY_VALUES = Object.values(ProductCategory);
 export const STOCK_TRANSACTION_TYPE_VALUES = Object.values(StockTransactionType);
 export const DEBT_STATUS_VALUES = Object.values(DebtStatus);
 

@@ -5,8 +5,8 @@ import { getLocale } from '@/lib/i18n/server';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AIWMS',
-  description: 'Accounting, Inventory and Work Management System',
+  title: 'ERDEVİR AIWMS',
+  description: 'ERDEVİR AIWMS — Accounting, Inventory and Work Management System',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

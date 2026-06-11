@@ -27,7 +27,12 @@ export default function NewCustomerPage() {
     try {
       const customer = await clientFetch<{ id: string }>('customers', {
         method: 'POST',
-        body: JSON.stringify({ name, phone, email, notes }),
+        body: JSON.stringify({
+          name,
+          phone: phone || undefined,
+          email: email || undefined,
+          notes: notes || undefined,
+        }),
       });
       router.push(`/customers/${customer.id}`);
       router.refresh();

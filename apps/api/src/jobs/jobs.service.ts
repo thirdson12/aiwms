@@ -1,25 +1,36 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { JobStatus as PrismaJobStatus } from '@aiwms/database';
+import { JobStatus as PrismaJobStatus, JobServiceType as PrismaJobServiceType, StockTransactionType as PrismaStockType } from '@aiwms/database';
 import {
   AuthUser,
+  DebtStatus,
   JobDto,
+  JobPartUsageDto,
+  JobServiceType,
   JobStatus,
+  ProductCategory,
   RoleName,
   isAdminOrOwner,
   summarizeDebts,
 } from '@aiwms/shared';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateJobDto, UpdateJobDto } from './dto/job.dto';
+import { CreateJobDto, UpdateJobDto, UseJobPartDto } from './dto/job.dto';
 
 const jobInclude = {
   createdBy: { select: { id: true, fullName: true, email: true } },
   assignedTo: { select: { id: true, fullName: true, email: true } },
   customer: { select: { id: true, name: true, phone: true } },
-  debts: true,
+  debts: { where: { deletedAt: null } },
+  stockTransactions: {
+    include: {
+      product: { select: { id: true, name: true, sku: true, category: true } },
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
 } as const;
 
 @Injectable()
@@ -70,6 +81,8 @@ export class JobsService {
       data: {
         title: dto.title,
         description: dto.description,
+        serviceType: (dto.serviceType ?? JobServiceType.NORMAL_SERVICE) as PrismaJobServiceType,
+        plateNumber: dto.plateNumber,
         assignedToId: dto.assignedToId,
         customerId: dto.customerId,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
@@ -122,6 +135,69 @@ export class JobsService {
     return this.applyUpdate(id, dto);
   }
 
+  async usePart(jobId: string, dto: UseJobPartDto, actor: AuthUser): Promise<JobDto> {
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job) throw new NotFoundException('Job not found');
+    this.assertCanView(job.assignedToId, actor);
+
+    if (actor.role === RoleName.WORKER && job.assignedToId !== actor.id) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const product = await this.prisma.product.findUnique({ where: { id: dto.productId } });
+    if (!product || !product.isActive) {
+      throw new NotFoundException('Product not found');
+    }
+    if (product.quantityOnHand < dto.quantity) {
+      throw new BadRequestException('Insufficient stock');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.product.update({
+        where: { id: dto.productId },
+        data: { quantityOnHand: product.quantityOnHand - dto.quantity },
+      }),
+      this.prisma.stockTransaction.create({
+        data: {
+          productId: dto.productId,
+          jobId,
+          type: PrismaStockType.stock_out,
+          quantity: dto.quantity,
+          notes: dto.notes ?? `Job: ${job.title}`,
+          createdById: actor.id,
+        },
+      }),
+    ]);
+
+    return this.findOne(jobId, actor);
+  }
+
+  async removePart(jobId: string, transactionId: string, actor: AuthUser): Promise<JobDto> {
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job) throw new NotFoundException('Job not found');
+
+    this.assertCanView(job.assignedToId, actor);
+    if (actor.role === RoleName.WORKER && job.assignedToId !== actor.id) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const tx = await this.prisma.stockTransaction.findFirst({
+      where: { id: transactionId, jobId, type: PrismaStockType.stock_out },
+      include: { product: true },
+    });
+    if (!tx) throw new NotFoundException('Part usage not found');
+
+    await this.prisma.$transaction([
+      this.prisma.product.update({
+        where: { id: tx.productId },
+        data: { quantityOnHand: tx.product.quantityOnHand + tx.quantity },
+      }),
+      this.prisma.stockTransaction.delete({ where: { id: transactionId } }),
+    ]);
+
+    return this.findOne(jobId, actor);
+  }
+
   async remove(id: string, actor: AuthUser): Promise<{ message: string }> {
     if (!isAdminOrOwner(actor.role)) {
       throw new ForbiddenException('Insufficient permissions');
@@ -143,6 +219,8 @@ export class JobsService {
         title: dto.title,
         description: dto.description,
         status: dto.status as PrismaJobStatus | undefined,
+        serviceType: dto.serviceType as PrismaJobServiceType | undefined,
+        plateNumber: dto.plateNumber,
         assignedToId: dto.assignedToId,
         customerId: dto.customerId,
         dueDate: dto.dueDate === null ? null : dto.dueDate ? new Date(dto.dueDate) : undefined,
@@ -182,6 +260,8 @@ export class JobsService {
     title: string;
     description: string | null;
     status: string;
+    serviceType: string;
+    plateNumber: string | null;
     createdById: string;
     assignedToId: string | null;
     customerId: string | null;
@@ -191,21 +271,48 @@ export class JobsService {
     createdBy?: { id: string; fullName: string; email: string };
     assignedTo?: { id: string; fullName: string; email: string } | null;
     customer?: { id: string; name: string; phone: string | null } | null;
-    debts?: Array<{ amount: unknown; paidAmount: unknown; dueDate: Date | null }>;
+    debts?: Array<{
+      amount: unknown;
+      paidAmount: unknown;
+      dueDate: Date | null;
+      statusOverride: string | null;
+    }>;
+    stockTransactions?: Array<{
+      id: string;
+      productId: string;
+      quantity: number;
+      notes: string | null;
+      createdAt: Date;
+      product: { id: string; name: string; sku: string; category: string };
+    }>;
   }): JobDto {
     const debtSummary = summarizeDebts(
       (job.debts ?? []).map((d) => ({
         amount: Number(d.amount),
         paidAmount: Number(d.paidAmount),
         dueDate: d.dueDate?.toISOString() ?? null,
+        statusOverride: (d.statusOverride as DebtStatus | null) ?? null,
       })),
     );
+
+    const partsUsed: JobPartUsageDto[] = (job.stockTransactions ?? []).map((tx) => ({
+      id: tx.id,
+      productId: tx.productId,
+      productName: tx.product.name,
+      productSku: tx.product.sku,
+      category: tx.product.category as ProductCategory,
+      quantity: tx.quantity,
+      notes: tx.notes,
+      createdAt: tx.createdAt.toISOString(),
+    }));
 
     return {
       id: job.id,
       title: job.title,
       description: job.description,
       status: job.status as JobStatus,
+      serviceType: job.serviceType as JobServiceType,
+      plateNumber: job.plateNumber,
       createdById: job.createdById,
       assignedToId: job.assignedToId,
       customerId: job.customerId,
@@ -216,6 +323,7 @@ export class JobsService {
       assignedTo: job.assignedTo,
       customer: job.customer,
       debtSummary,
+      partsUsed,
     };
   }
 }

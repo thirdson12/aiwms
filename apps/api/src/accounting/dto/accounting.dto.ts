@@ -1,5 +1,6 @@
 import {
   IsDateString,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -7,6 +8,9 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { DebtStatus } from '@aiwms/shared';
+
+const DEBT_STATUS_OVERRIDE_VALUES = ['open', 'partial', 'paid', 'overdue'] as const;
 
 export class CreateExpenseDto {
   @IsNumber()
@@ -24,6 +28,10 @@ export class CreateExpenseDto {
   @IsOptional()
   @IsDateString()
   date?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceFileName?: string;
 
   @IsOptional()
   @IsUUID()
@@ -50,6 +58,10 @@ export class CreateIncomeDto {
   @IsOptional()
   @IsDateString()
   date?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceFileName?: string;
 
   @IsOptional()
   @IsUUID()
@@ -93,4 +105,18 @@ export class PayDebtDto {
   @IsOptional()
   @IsString()
   notes?: string;
+}
+
+export class UpdateDebtDto {
+  @IsOptional()
+  @IsIn([...DEBT_STATUS_OVERRIDE_VALUES, null])
+  statusOverride?: DebtStatus | null;
+
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string | null;
+
+  @IsOptional()
+  @IsString()
+  notes?: string | null;
 }

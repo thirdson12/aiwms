@@ -5,6 +5,7 @@ import { AuthUser, ExpenseDto, formatMoney, isAdminOrOwner } from '@aiwms/shared
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InvoiceUploadField, InvoiceFileCell } from '@/components/invoice-upload-field';
 import { AccountingDataTable } from '@/components/accounting-data-table';
 import { useI18n } from '@/components/i18n-provider';
 import { clientFetch } from '@/lib/client-api';
@@ -15,7 +16,7 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseDto[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ amount: '', description: '', category: '' });
+  const [form, setForm] = useState({ amount: '', description: '', category: '', invoiceFileName: '' });
   const moneyLocale = locale === 'tr' ? 'tr-TR' : 'en-US';
   const canManage = user && isAdminOrOwner(user.role);
 
@@ -40,9 +41,10 @@ export default function ExpensesPage() {
         amount: Number(form.amount),
         description: form.description,
         category: form.category || undefined,
+        invoiceFileName: form.invoiceFileName || undefined,
       }),
     });
-    setForm({ amount: '', description: '', category: '' });
+    setForm({ amount: '', description: '', category: '', invoiceFileName: '' });
     await loadData();
   }
 
@@ -60,23 +62,29 @@ export default function ExpensesPage() {
           <CardHeader>
             <CardTitle>{t('accounting.newExpense')}</CardTitle>
           </CardHeader>
-          <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Input
-              placeholder={t('accounting.amount')}
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              required
-            />
-            <Input
-              placeholder={t('accounting.description')}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              required
-            />
-            <Input
-              placeholder={t('accounting.category')}
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Input
+                placeholder={t('accounting.amount')}
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                required
+              />
+              <Input
+                placeholder={t('accounting.description')}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                required
+              />
+              <Input
+                placeholder={t('accounting.category')}
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              />
+            </div>
+            <InvoiceUploadField
+              fileName={form.invoiceFileName}
+              onChange={(invoiceFileName) => setForm({ ...form, invoiceFileName })}
             />
             <Button type="submit">{t('common.create')}</Button>
           </form>
@@ -85,12 +93,23 @@ export default function ExpensesPage() {
 
       <AccountingDataTable
         title={t('accounting.expenseList')}
-        headers={[t('accounting.date'), t('accounting.description'), t('accounting.category'), t('accounting.amount')]}
+        headers={[
+          t('accounting.date'),
+          t('accounting.description'),
+          t('accounting.category'),
+          t('accounting.amount'),
+          t('accounting.invoiceUpload'),
+        ]}
         rows={expenses.map((item) => [
           formatDate(item.date, locale),
           item.description,
           item.category ?? '—',
           formatMoney(item.amount, moneyLocale),
+          item.invoiceFileName ? (
+            <InvoiceFileCell key={item.id} fileName={item.invoiceFileName} />
+          ) : (
+            '—'
+          ),
         ])}
         empty={t('accounting.noRecords')}
       />

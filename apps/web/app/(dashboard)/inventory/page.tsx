@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { ProductDto, isAdminOrOwner } from '@aiwms/shared';
 import { apiFetch, getCurrentUser } from '@/lib/api';
 import { getServerTranslator } from '@/lib/i18n/server';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { InventoryTables } from '@/components/inventory-tables';
 
 export default async function InventoryPage() {
   const [{ t }, products, user] = await Promise.all([
@@ -34,51 +33,7 @@ export default async function InventoryPage() {
         )}
       </div>
 
-      <Card className="overflow-x-auto p-0">
-        <table className="min-w-full text-sm">
-          <thead className="border-b border-border bg-slate-50 text-left">
-            <tr>
-              <th className="px-4 py-3 font-medium">{t('inventory.name')}</th>
-              <th className="px-4 py-3 font-medium">{t('inventory.sku')}</th>
-              <th className="px-4 py-3 font-medium">{t('inventory.quantity')}</th>
-              <th className="px-4 py-3 font-medium">{t('inventory.unit')}</th>
-              <th className="px-4 py-3 font-medium">{t('common.status')}</th>
-              <th className="px-4 py-3 font-medium">{t('common.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium">{product.name}</td>
-                <td className="px-4 py-3">{product.sku}</td>
-                <td className="px-4 py-3">{product.quantityOnHand}</td>
-                <td className="px-4 py-3">{product.unit}</td>
-                <td className="px-4 py-3">
-                  {!product.isActive ? (
-                    <Badge variant="cancelled">{t('common.inactive')}</Badge>
-                  ) : product.isLowStock ? (
-                    <Badge variant="pending">{t('inventory.lowStock')}</Badge>
-                  ) : (
-                    <Badge variant="completed">{t('common.active')}</Badge>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <Link href={`/inventory/${product.id}`} className="text-primary hover:underline">
-                    {t('common.view')}
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted">
-                  {t('inventory.noProducts')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+      <InventoryTables products={products} />
     </div>
   );
 }

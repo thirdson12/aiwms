@@ -7,11 +7,13 @@ import {
 import { StockTransactionType as PrismaStockType } from '@aiwms/database';
 import {
   AuthUser,
+  ProductCategory,
   ProductDto,
   StockTransactionDto,
   StockTransactionType,
   isAdminOrOwner,
 } from '@aiwms/shared';
+import { ProductCategory as PrismaProductCategory } from '@aiwms/database';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateProductDto,
@@ -23,9 +25,12 @@ import {
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(includeInactive = false): Promise<ProductDto[]> {
+  async findAll(includeInactive = false, category?: ProductCategory): Promise<ProductDto[]> {
     const products = await this.prisma.product.findMany({
-      where: includeInactive ? {} : { isActive: true },
+      where: {
+        ...(includeInactive ? {} : { isActive: true }),
+        ...(category ? { category } : {}),
+      },
       orderBy: { name: 'asc' },
     });
 
@@ -53,6 +58,7 @@ export class ProductsService {
         name: dto.name,
         sku: dto.sku.toUpperCase(),
         description: dto.description,
+        category: (dto.category ?? ProductCategory.SERVICE_PART) as PrismaProductCategory,
         unit: dto.unit ?? 'adet',
         quantityOnHand: dto.quantityOnHand ?? 0,
         minStockLevel: dto.minStockLevel ?? 0,
@@ -97,6 +103,7 @@ export class ProductsService {
         name: dto.name,
         sku: dto.sku?.toUpperCase(),
         description: dto.description,
+        category: dto.category as PrismaProductCategory | undefined,
         unit: dto.unit,
         minStockLevel: dto.minStockLevel,
         isActive: dto.isActive,
@@ -185,6 +192,7 @@ export class ProductsService {
     name: string;
     sku: string;
     description: string | null;
+    category: string;
     unit: string;
     quantityOnHand: number;
     minStockLevel: number;
@@ -197,6 +205,7 @@ export class ProductsService {
       name: product.name,
       sku: product.sku,
       description: product.description,
+      category: product.category as ProductCategory,
       unit: product.unit,
       quantityOnHand: product.quantityOnHand,
       minStockLevel: product.minStockLevel,

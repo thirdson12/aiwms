@@ -16,10 +16,12 @@
     "none": "—",
     "language": "Dil",
     "turkish": "Türkçe",
-    "english": "English"
+    "english": "English",
+    "searchByName": "İsim ara...",
+    "noSearchResults": "Aramanızla eşleşen kayıt yok"
   },
   "nav": {
-    "brand": "AIWMS",
+    "brand": "ERDEVİR AIWMS",
     "subtitle": "İş Yönetimi",
     "dashboard": "Panel",
     "jobs": "İşler",
@@ -36,6 +38,10 @@
     "owner": "İşletme Sahibi",
     "worker": "Çalışan"
   },
+  "jobServiceType": {
+    "transmission": "Şanzıman",
+    "normal_service": "Normal Servis"
+  },
   "jobStatus": {
     "pending": "beklemede",
     "in_progress": "devam ediyor",
@@ -48,7 +54,7 @@
     "adjustment": "düzeltme"
   },
   "login": {
-    "title": "AIWMS'e giriş yap",
+    "title": "ERDEVİR AIWMS'e giriş yap",
     "subtitle": "Muhasebe, Envanter ve İş Yönetimi",
     "email": "E-posta",
     "password": "Şifre",
@@ -67,6 +73,11 @@
     "myJobs": "Bana Atanan İşler",
     "totalProducts": "Toplam Ürün",
     "lowStock": "Düşük Stok",
+    "transmissionStock": "Şanzıman Stoğu",
+    "servicePartsStock": "Servis Parçaları",
+    "category": "Kategori",
+    "categoryTransmission": "Şanzıman",
+    "categoryServicePart": "Servis Parçası",
     "totalCustomers": "Toplam Müşteri",
     "totalExpenses": "Toplam Gider",
     "totalIncome": "Toplam Gelir",
@@ -78,7 +89,18 @@
     "monthlyChart": "Son 6 ay",
     "incomeLabel": "Gelir",
     "expenseLabel": "Gider",
-    "noChartData": "Grafik için yeterli veri yok"
+    "noChartData": "Grafik için yeterli veri yok",
+    "quickActions": "Hızlı Ekle",
+    "quickJob": "İş Ekle",
+    "quickJobDesc": "Servis türü, plaka ve müşteri",
+    "quickCustomer": "Müşteri Ekle",
+    "quickCustomerDesc": "E-posta zorunlu değil",
+    "quickDebt": "Borç Ekle",
+    "quickDebtDesc": "Muhasebe borç kaydı",
+    "quickInventory": "Envanter Ekle",
+    "quickInventoryDesc": "Şanzıman veya servis parçası",
+    "debtorsTitle": "Borçlular",
+    "noDebtors": "Borçlu müşteri bulunamadı"
   },
   "jobs": {
     "title": "İşler",
@@ -105,7 +127,23 @@
     "created": "Oluşturulma",
     "saving": "Kaydediliyor...",
     "saveChanges": "Değişiklikleri kaydet",
-    "deleteConfirm": "Bu iş silinsin mi?"
+    "deleteConfirm": "Bu iş silinsin mi?",
+    "serviceType": "Servis Türü",
+    "plateNumber": "Plaka",
+    "serviceTransmission": "Şanzıman",
+    "serviceNormal": "Normal Servis",
+    "addDebt": "Borç Ekle",
+    "debtTitle": "Borç başlığı",
+    "debtAmount": "Borç tutarı",
+    "partsUsed": "Kullanılan Parçalar",
+    "installPart": "Parça / Şanzıman Tak",
+    "selectProduct": "Stoktan seç",
+    "partQuantity": "Adet",
+    "install": "Stoktan düş",
+    "noPartsUsed": "Henüz parça kullanılmadı",
+    "removePartConfirm": "Bu parça kaydı silinsin mi? Stok geri eklenecek.",
+    "removeDebtConfirm": "Bu borç kaydı silinsin mi?",
+    "debtHasPayments": "Ödeme var"
   },
   "inventory": {
     "title": "Envanter",
@@ -118,6 +156,11 @@
     "quantity": "Miktar",
     "minStock": "Min. Stok",
     "lowStock": "Düşük stok",
+    "transmissionStock": "Şanzıman Stoğu",
+    "servicePartsStock": "Servis Parçaları",
+    "category": "Kategori",
+    "categoryTransmission": "Şanzıman",
+    "categoryServicePart": "Servis Parçası",
     "noProducts": "Ürün bulunamadı",
     "createTitle": "Ürün Oluştur",
     "createSubtitle": "Envantere yeni ürün ekle",
@@ -182,8 +225,21 @@
     "customer": "Müşteri",
     "job": "İş",
     "pay": "Ödeme al",
+    "whatsappDebt": "WhatsApp Borç",
+    "changeStatus": "Durum değiştir",
+    "autoStatus": "Otomatik hesapla",
     "payAmount": "Ödeme tutarı",
     "newDebt": "Yeni borç",
+    "manageTitle": "Borç Yönetimi",
+    "paymentHistory": "Ödeme geçmişi",
+    "reversePayment": "Ödemeyi geri al",
+    "reversePaymentConfirm": "Bu ödeme kaydı geri alınsın mı? Kalan borç buna göre güncellenecek.",
+    "softDelete": "Arşivle",
+    "softDeleteConfirm": "Bu borç arşivlensin mi? Yönetici silinen borçlar sekmesinden geri yükleyebilir.",
+    "restore": "Geri yükle",
+    "restoreConfirm": "Bu borç geri yüklensin mi?",
+    "deletedAt": "Silinme tarihi",
+    "noDeletedDebts": "Silinen borç yok",
     "noDebts": "Borç kaydı yok"
   },
   "customers": {
@@ -197,7 +253,10 @@
     "debtStatus": "Borç durumu",
     "noCustomers": "Müşteri bulunamadı",
     "createTitle": "Müşteri Oluştur",
-    "detailTitle": "Müşteri detayı"
+    "detailTitle": "Müşteri detayı",
+    "editTitle": "Müşteriyi düzenle",
+    "jobsTitle": "Yapılan İşler",
+    "noJobs": "Bu müşteriye ait iş bulunamadı"
   },
   "accounting": {
     "title": "Muhasebe",
@@ -206,6 +265,8 @@
     "expenses": "Giderler",
     "incomes": "Gelirler",
     "debtsTab": "Borçlar",
+    "deletedDebtsTab": "Silinen Borçlar",
+    "deletedDebtsDesc": "Yalnızca yönetici görür. Silinen borçları geri yükleyebilirsiniz.",
     "expensesDesc": "Tüm gider kayıtlarını görüntüleyin ve yeni gider ekleyin",
     "incomesDesc": "Tüm gelir kayıtlarını görüntüleyin ve yeni gelir ekleyin",
     "debtsDesc": "Müşteri borç durumu, borç kayıtları ve tahsilat",
@@ -225,6 +286,8 @@
     "newExpense": "Gider ekle",
     "newIncome": "Gelir ekle",
     "noRecords": "Kayıt yok",
+    "invoiceUpload": "Fatura yükle (isteğe bağlı)",
+    "invoiceAttached": "Ekli fatura",
     "debtCol": "Borç durumu",
     "customerDebts": "Müşteri borç durumu"
   },

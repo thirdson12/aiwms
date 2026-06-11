@@ -8,7 +8,12 @@ async function proxyRequest(request: NextRequest, path: string) {
   const url = `${API_URL}/${path}${request.nextUrl.search}`;
 
   const headers = new Headers();
-  headers.set('Content-Type', 'application/json');
+  const contentType = request.headers.get('content-type') ?? '';
+  if (contentType.includes('multipart/form-data')) {
+    headers.set('Content-Type', contentType);
+  } else if (request.method !== 'GET' && request.method !== 'HEAD') {
+    headers.set('Content-Type', 'application/json');
+  }
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
@@ -20,15 +25,33 @@ async function proxyRequest(request: NextRequest, path: string) {
   };
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    init.body = await request.text();
+    if (contentType.includes('multipart/form-data')) {
+      init.body = await request.arrayBuffer();
+    } else {
+      init.body = await request.text();
+    }
   }
 
   const response = await fetch(url, init);
-  const text = await response.text();
+  const responseType = response.headers.get('content-type') ?? 'application/json';
 
-  return new NextResponse(text, {
+  if (responseType.includes('application/json')) {
+    const text = await response.text();
+    return new NextResponse(text, {
+      status: response.status,
+      headers: { 'Content-Type': responseType },
+    });
+  }
+
+  const buffer = await response.arrayBuffer();
+  const outHeaders = new Headers();
+  outHeaders.set('Content-Type', responseType);
+  const disposition = response.headers.get('content-disposition');
+  if (disposition) outHeaders.set('Content-Disposition', disposition);
+
+  return new NextResponse(buffer, {
     status: response.status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: outHeaders,
   });
 }
 

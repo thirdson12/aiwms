@@ -42,6 +42,23 @@ enum JobStatus {
   cancelled
 }
 
+enum JobServiceType {
+  transmission
+  normal_service
+}
+
+enum ProductCategory {
+  transmission
+  service_part
+}
+
+enum DebtStatusOverride {
+  open
+  partial
+  paid
+  overdue
+}
+
 model Customer {
   id        String   @id @default(uuid())
   name      String
@@ -61,23 +78,26 @@ model Customer {
 }
 
 model Job {
-  id           String    @id @default(uuid())
+  id           String          @id @default(uuid())
   title        String
   description  String?
-  status       JobStatus @default(pending)
-  createdById  String    @map("created_by_id")
-  assignedToId String?   @map("assigned_to_id")
-  customerId   String?   @map("customer_id")
-  dueDate      DateTime? @map("due_date")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  status       JobStatus       @default(pending)
+  serviceType  JobServiceType  @default(normal_service) @map("service_type")
+  plateNumber  String?         @map("plate_number")
+  createdById  String          @map("created_by_id")
+  assignedToId String?         @map("assigned_to_id")
+  customerId   String?         @map("customer_id")
+  dueDate      DateTime?       @map("due_date")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
 
-  createdBy  User      @relation("CreatedJobs", fields: [createdById], references: [id])
-  assignedTo User?     @relation("AssignedJobs", fields: [assignedToId], references: [id])
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  debts      Debt[]
-  expenses   Expense[]
-  incomes    Income[]
+  createdBy          User               @relation("CreatedJobs", fields: [createdById], references: [id])
+  assignedTo         User?              @relation("AssignedJobs", fields: [assignedToId], references: [id])
+  customer           Customer?          @relation(fields: [customerId], references: [id])
+  debts              Debt[]
+  expenses           Expense[]
+  incomes            Income[]
+  stockTransactions  StockTransaction[]
 
   @@map("jobs")
 }
@@ -89,16 +109,17 @@ enum StockTransactionType {
 }
 
 model Product {
-  id             String   @id @default(uuid())
+  id             String          @id @default(uuid())
   name           String
-  sku            String   @unique
+  sku            String          @unique
   description    String?
-  unit           String   @default("adet")
-  quantityOnHand Int      @default(0) @map("quantity_on_hand")
-  minStockLevel  Int      @default(0) @map("min_stock_level")
-  isActive       Boolean  @default(true) @map("is_active")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  category       ProductCategory @default(service_part)
+  unit           String          @default("adet")
+  quantityOnHand Int             @default(0) @map("quantity_on_hand")
+  minStockLevel  Int             @default(0) @map("min_stock_level")
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
   transactions StockTransaction[]
 
@@ -108,6 +129,7 @@ model Product {
 model StockTransaction {
   id          String               @id @default(uuid())
   productId   String               @map("product_id")
+  jobId       String?              @map("job_id")
   type        StockTransactionType
   quantity    Int
   notes       String?
@@ -115,21 +137,23 @@ model StockTransaction {
   createdAt   DateTime             @default(now()) @map("created_at")
 
   product   Product @relation(fields: [productId], references: [id])
+  job       Job?    @relation(fields: [jobId], references: [id])
   createdBy User    @relation(fields: [createdById], references: [id])
 
   @@map("stock_transactions")
 }
 
 model Expense {
-  id          String   @id @default(uuid())
-  amount      Decimal  @db.Decimal(12, 2)
-  description String
-  category    String?
-  date        DateTime @default(now())
-  customerId  String?  @map("customer_id")
-  jobId       String?  @map("job_id")
-  createdById String   @map("created_by_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  amount          Decimal  @db.Decimal(12, 2)
+  description     String
+  category        String?
+  date            DateTime @default(now())
+  invoiceFileName String?  @map("invoice_file_name")
+  customerId      String?  @map("customer_id")
+  jobId           String?  @map("job_id")
+  createdById     String   @map("created_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   customer  Customer? @relation(fields: [customerId], references: [id])
   job       Job?      @relation(fields: [jobId], references: [id])
@@ -139,15 +163,16 @@ model Expense {
 }
 
 model Income {
-  id          String   @id @default(uuid())
-  amount      Decimal  @db.Decimal(12, 2)
-  description String
-  category    String?
-  date        DateTime @default(now())
-  customerId  String?  @map("customer_id")
-  jobId       String?  @map("job_id")
-  createdById String   @map("created_by_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  amount          Decimal  @db.Decimal(12, 2)
+  description     String
+  category        String?
+  date            DateTime @default(now())
+  invoiceFileName String?  @map("invoice_file_name")
+  customerId      String?  @map("customer_id")
+  jobId           String?  @map("job_id")
+  createdById     String   @map("created_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   customer  Customer? @relation(fields: [customerId], references: [id])
   job       Job?      @relation(fields: [jobId], references: [id])
@@ -157,17 +182,19 @@ model Income {
 }
 
 model Debt {
-  id          String    @id @default(uuid())
-  title       String
-  amount      Decimal   @db.Decimal(12, 2)
-  paidAmount  Decimal   @default(0) @map("paid_amount") @db.Decimal(12, 2)
-  dueDate     DateTime? @map("due_date")
-  notes       String?
-  customerId  String    @map("customer_id")
-  jobId       String?   @map("job_id")
-  createdById String    @map("created_by_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id             String              @id @default(uuid())
+  title          String
+  amount         Decimal             @db.Decimal(12, 2)
+  paidAmount     Decimal             @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  dueDate        DateTime?           @map("due_date")
+  notes          String?
+  statusOverride DebtStatusOverride? @map("status_override")
+  customerId     String              @map("customer_id")
+  jobId          String?             @map("job_id")
+  createdById    String              @map("created_by_id")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  deletedAt      DateTime?           @map("deleted_at")
 
   customer  Customer        @relation(fields: [customerId], references: [id])
   job       Job?            @relation(fields: [jobId], references: [id])

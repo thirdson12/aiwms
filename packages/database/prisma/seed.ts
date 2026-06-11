@@ -106,34 +106,37 @@ async function main() {
   if (existingProducts === 0) {
     const productA = await prisma.product.create({
       data: {
-        name: 'Çelik Vida M8',
-        sku: 'SKU-001',
-        description: 'Paslanmaz çelik vida 8mm',
+        name: 'ZF 6HP19 Şanzıman',
+        sku: 'TRN-001',
+        description: 'BMW 3 serisi şanzıman',
         unit: 'adet',
-        quantityOnHand: 500,
-        minStockLevel: 100,
+        quantityOnHand: 3,
+        minStockLevel: 1,
+        category: 'TRANSMISSION',
       },
     });
 
     const productB = await prisma.product.create({
       data: {
-        name: 'Ahşap Panel',
-        sku: 'SKU-002',
-        description: '18mm kontrplak panel',
-        unit: 'm2',
-        quantityOnHand: 45,
-        minStockLevel: 50,
+        name: 'Debriyaj Seti',
+        sku: 'PRT-001',
+        description: 'Otomatik şanzıman debriyaj seti',
+        unit: 'adet',
+        quantityOnHand: 12,
+        minStockLevel: 4,
+        category: 'SERVICE_PART',
       },
     });
 
     await prisma.product.create({
       data: {
-        name: 'Boya Kutusu',
-        sku: 'SKU-003',
-        description: '5L su bazlı boya',
-        unit: 'kutu',
-        quantityOnHand: 12,
+        name: 'Filtre Seti',
+        sku: 'PRT-002',
+        description: 'Şanzıman yağ filtre seti',
+        unit: 'adet',
+        quantityOnHand: 25,
         minStockLevel: 10,
+        category: 'SERVICE_PART',
       },
     });
 
@@ -142,14 +145,14 @@ async function main() {
         {
           productId: productA.id,
           type: 'stock_in',
-          quantity: 500,
+          quantity: 3,
           notes: 'Başlangıç stoku',
           createdById: owner.id,
         },
         {
           productId: productB.id,
           type: 'stock_in',
-          quantity: 45,
+          quantity: 12,
           notes: 'Başlangıç stoku',
           createdById: owner.id,
         },

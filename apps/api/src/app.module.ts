@@ -10,6 +10,7 @@ import { AccountingModule } from './accounting/accounting.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
+import { UploadsModule } from './uploads/uploads.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -28,6 +29,7 @@ import { HealthController } from './health.controller';
     WhatsappModule,
     DashboardModule,
     ReportsModule,
+    UploadsModule,
   ],
   controllers: [HealthController],
 })

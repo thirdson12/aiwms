@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AuthUser, RoleName } from '@aiwms/shared';
+import { LayoutDashboard, TrendingDown, TrendingUp, Wallet, ArchiveRestore } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/i18n-provider';
+import { clientFetch } from '@/lib/client-api';
 
-const tabs = [
+const baseTabs = [
   { href: '/accounting', icon: LayoutDashboard, labelKey: 'overview' as const, exact: true },
   { href: '/accounting/expenses', icon: TrendingDown, labelKey: 'expenses' as const },
   { href: '/accounting/incomes', icon: TrendingUp, labelKey: 'incomes' as const },
@@ -16,6 +19,26 @@ const tabs = [
 export function AccountingNav() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    clientFetch<AuthUser>('auth/me')
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, []);
+
+  const tabs =
+    user?.role === RoleName.ADMIN
+      ? [
+          ...baseTabs,
+          {
+            href: '/accounting/deleted-debts',
+            icon: ArchiveRestore,
+            labelKey: 'deletedDebtsTab' as const,
+            exact: false,
+          },
+        ]
+      : baseTabs;
 
   return (
     <nav className="flex flex-wrap gap-2 border-b border-border pb-4">

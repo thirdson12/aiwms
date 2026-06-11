@@ -10,7 +10,7 @@ export class CustomersService {
   async findAll(): Promise<CustomerDto[]> {
     const customers = await this.prisma.customer.findMany({
       where: { isActive: true },
-      include: { debts: true },
+      include: { debts: { where: { deletedAt: null } } },
       orderBy: { name: 'asc' },
     });
 
@@ -22,7 +22,7 @@ export class CustomersService {
   async findOne(id: string): Promise<CustomerDto> {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
-      include: { debts: true },
+      include: { debts: { where: { deletedAt: null } } },
     });
     if (!customer) throw new NotFoundException('Customer not found');
     return this.toDto(customer, summarizeDebts(customer.debts.map((d) => this.debtNumbers(d))));
@@ -36,7 +36,7 @@ export class CustomersService {
         email: dto.email,
         notes: dto.notes,
       },
-      include: { debts: true },
+      include: { debts: { where: { deletedAt: null } } },
     });
     return this.toDto(customer, summarizeDebts([]));
   }
@@ -46,7 +46,7 @@ export class CustomersService {
     const customer = await this.prisma.customer.update({
       where: { id },
       data: dto,
-      include: { debts: true },
+      include: { debts: { where: { deletedAt: null } } },
     });
     return this.toDto(customer, summarizeDebts(customer.debts.map((d) => this.debtNumbers(d))));
   }
