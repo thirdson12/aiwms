@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { runDeployMigrations } from './migrate-on-start';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,8 +24,19 @@ async function bootstrap() {
   });
 
   const port = Number(process.env.PORT ?? config.get('API_PORT') ?? 3001);
+  const onRender = Boolean(process.env.RENDER);
+
   await app.listen(port, '0.0.0.0');
-  console.log(`API running on port ${port}`);
+  console.log(`API listening on port ${port}`);
+
+  if (onRender) {
+    console.log('Running database migrations...');
+    await runDeployMigrations();
+    console.log('Database ready');
+  }
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

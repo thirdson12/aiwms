@@ -95,21 +95,17 @@ Render loglarında `aiwms-api` → **Logs** sekmesine bakın. Genelde Prisma vey
 
 ### P1001 — Can't reach database server (`dpg-...-a:5432`)
 
-Bu hata neredeyse her zaman **bölge uyumsuzluğu** veya **yanlış DATABASE_URL** demektir.
+**Şimdi yapın (2 dk):**
 
-**Kontrol edin (Render Dashboard):**
-1. `aiwms-db` (PostgreSQL) → **Region**
-2. `aiwms-api` → **Region**
-3. İkisi **aynı bölgede** olmalı (ör. ikisi de Frankfurt)
+1. Render → **aiwms-db** → **Info** veya **Connections**
+2. **External Database URL** kopyalayın (içinde `.oregon-postgres.render.com` veya `.frankfurt-postgres.render.com` olmalı — sadece `dpg-...-a` değil!)
+3. **aiwms-api** → **Environment** → `DATABASE_URL` → yapıştırın
+4. URL'de `sslmode=` yoksa sonuna `?sslmode=require` ekleyin
+5. **Save** → **Manual Deploy**
 
-API Frankfurt'ta, DB başka bölgedeyse internal hostname (`dpg-...-a`) **çalışmaz**.
+Internal URL (`dpg-...-a`) sadece **aynı bölgedeki** servislerde çalışır. Bölge uyumsuzluğunda External URL şart.
 
-**Hızlı çözüm (önerilen):**
-1. PostgreSQL servisi → **Connections** → **External Database URL** kopyalayın
-2. `aiwms-api` → **Environment** → `DATABASE_URL` → External URL yapıştırın (sonuna `?sslmode=require` ekleyin, yoksa)
-3. **Manual Deploy**
-
-**Kalıcı çözüm:** DB ve API aynı bölgede olsun. Gerekirse DB'yi doğru bölgede yeniden oluşturun ve Blueprint sync yapın.
+`No open ports detected` hatası migrate DB'ye ulaşamayınca API'nin hiç ayağa kalkmamasından kaynaklanıyordu; yeni sürüm önce portu açar.
 
 ### Veritabanı boş
 Render artık **Docker** ile deploy eder (`Dockerfile.api`, `Dockerfile.web`). Blueprint sync sonrası **Manual Deploy → Clear build cache** yapın.

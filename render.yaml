@@ -1,10 +1,12 @@
 # Render Blueprint — AIWMS
 # https://render.com/docs/blueprint-spec
+#
+# IMPORTANT: If API logs show P1001 on dpg-...-a, set DATABASE_URL manually
+# to the External Database URL from PostgreSQL → Connections in Render Dashboard.
 
 databases:
   - name: aiwms-db
     plan: free
-    region: frankfurt
     databaseName: aiwms
     user: aiwms
 
@@ -13,7 +15,6 @@ services:
     name: aiwms-api
     runtime: docker
     plan: free
-    region: frankfurt
     dockerfilePath: ./Dockerfile.api
     envVars:
       - key: NODE_ENV
@@ -40,7 +41,6 @@ services:
     name: aiwms-web
     runtime: docker
     plan: free
-    region: frankfurt
     dockerfilePath: ./Dockerfile.web
     envVars:
       - key: NODE_ENV
