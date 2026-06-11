@@ -16,18 +16,16 @@
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts",
-    "studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "bcryptjs": "^3.0.2",
     "prisma": "^6.9.0",
-    "tsx": "^4.20.3"
-  },
-  "devDependencies": {
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
+  "devDependencies": {},
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }

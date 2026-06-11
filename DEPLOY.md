@@ -94,7 +94,9 @@ Render loglarında `aiwms-api` → **Logs** sekmesine bakın. Genelde Prisma vey
 - Web servisinde `API_URL` = API'nin `https://...onrender.com` adresi olmalı
 
 ### Veritabanı boş
-API `startCommand` migration + seed çalıştırır (free tier `preDeployCommand` desteklemez). Health check kapalı — migrate bitene kadar beklenir.
+Render artık **Docker** ile deploy eder (`Dockerfile.api`, `Dockerfile.web`). Blueprint sync sonrası **Manual Deploy → Clear build cache** yapın.
+
+API `startCommand` migration + seed çalıştırır (free tier `preDeployCommand` desteklemez).
 
 ### Ücretsiz PostgreSQL
 Render free DB 90 gün sonra silinir; kalıcı kullanım için ücretli plan gerekir.

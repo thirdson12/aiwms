@@ -1,0 +1,25 @@
+FROM node:20-bookworm-slim
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
+COPY apps/web apps/web
+COPY apps/api/package.json apps/api/package.json
+COPY packages packages
+
+ENV CI=true
+ENV NODE_ENV=development
+RUN pnpm install --frozen-lockfile
+
+ENV NODE_ENV=production
+RUN pnpm render:build:web
+ENV HOSTNAME=0.0.0.0
+
+WORKDIR /app/apps/web
+CMD ["sh", "-c", "exec pnpm exec next start -H 0.0.0.0 -p ${PORT:-3000}"]

@@ -10,7 +10,7 @@
     "db:migrate:deploy": "pnpm --filter @aiwms/database migrate:deploy",
     "db:seed": "pnpm --filter @aiwms/database seed",
     "db:studio": "pnpm --filter @aiwms/database studio",
-    "render:build:api": "pnpm --filter @aiwms/shared build && pnpm --filter @aiwms/database build && pnpm db:generate && pnpm --filter @aiwms/api build",
+    "render:build:api": "pnpm db:generate && pnpm --filter @aiwms/shared build && pnpm --filter @aiwms/database build && pnpm --filter @aiwms/api build",
     "render:build:web": "pnpm --filter @aiwms/shared build && pnpm --filter @aiwms/web build",
     "render:deploy:api": "pnpm db:migrate:deploy && pnpm db:seed",
     "render:start:api": "pnpm --filter @aiwms/api start",

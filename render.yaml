@@ -10,11 +10,10 @@ databases:
 services:
   - type: web
     name: aiwms-api
-    runtime: node
+    runtime: docker
     plan: free
     region: frankfurt
-    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && NODE_ENV=development pnpm install --frozen-lockfile && pnpm render:build:api
-    startCommand: pnpm render:deploy:api && pnpm render:start:api
+    dockerfilePath: ./Dockerfile.api
     envVars:
       - key: NODE_ENV
         value: production
@@ -38,11 +37,10 @@ services:
 
   - type: web
     name: aiwms-web
-    runtime: node
+    runtime: docker
     plan: free
     region: frankfurt
-    buildCommand: corepack enable && corepack prepare pnpm@9.15.0 --activate && NODE_ENV=development pnpm install --frozen-lockfile && pnpm render:build:web
-    startCommand: pnpm render:start:web
+    dockerfilePath: ./Dockerfile.web
     envVars:
       - key: NODE_ENV
         value: production
